@@ -13,11 +13,62 @@ class GameState():
         self.whiteToMove = True
         self.moveLog = []
 
+    # function to execute a Move (doesn't work for castling, en passant, and pawn promotion)
     def make_move(self, move):
         self.board[move.startRow][move.startCol] = "--"
         self.board[move.endRow][move.endCol] = move.pieceMoved
         self.moveLog.append(move)
         self.whiteToMove = not self.whiteToMove
+
+    # function to undo the last move
+    def undo_move(self):
+        if len(self.moveLog) != 0:
+            move = self.moveLog.pop()
+            self.whiteToMove = not self.whiteToMove
+            self.board[move.startRow][move.startCol] = move.pieceMoved
+            self.board[move.endRow][move.endCol] = move.pieceCaptured
+
+    def get_all_valid_moves(self):
+        return self.get_all_possible_moves()
+
+    def get_all_possible_moves(self):
+        moves = []
+        for r in range(len(self.board)):
+            for c in range(len(self.board[r])):
+                turn = self.board[r][c][0]  # returns 'w' or 'b'
+                if turn == 'w' and self.whiteToMove:
+                    piece = self.board[r][c][1]
+                    if piece == 'p':
+                        self.get_pawn_moves(r, c, moves)
+                    elif piece == 'R':
+                        self.get_rook_moves(r, c, moves)
+                    elif piece == 'N':
+                        self.get_knight_moves(r, c, moves)
+                    elif piece == 'B':
+                        self.get_bishop_moves(r, c, moves)
+                    elif piece == 'Q':
+                        self.get_queen_moves(r, c, moves)
+                    elif piece == 'K':
+                        self.get_king_moves(r, c, moves)
+        return moves
+
+    def get_pawn_moves(self, r, c, moves):
+        pass
+
+    def get_rook_moves(self, r, c, moves):
+        pass
+
+    def get_knight_moves(self, r, c, moves):
+        pass
+
+    def get_bishop_moves(self, r, c, moves):
+        pass
+
+    def get_queen_moves(self, r, c, moves):
+        pass
+
+    def get_king_moves(self, r, c, moves):
+        pass
 
 
 class Move():
@@ -34,6 +85,13 @@ class Move():
         self.endCol = endSquare[1]
         self.pieceMoved = board[self.startRow][self.startCol]
         self.pieceCaptured = board[self.endRow][self.endCol]
+        self.moveID = self.startRow * 1000 + self.startCol * 100 + self.endRow * 10 + self.endCol
+
+    # Override the equals() method
+    def __eq__(self, other):
+        if isinstance(other, Move):
+            return self.moveID == other.moveID
+        return False
 
     def get_rank_file(self, row, col):
         return self.cols_to_files[col] + self.rows_to_ranks[row]
