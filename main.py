@@ -43,11 +43,29 @@ def main():
     curr_state = ChessEngine.GameState()
     load_images()
     running = True
+    squareSelected = ()
+    playerClicks = []
     while running:
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
-
+            elif e.type == p.MOUSEBUTTONDOWN:
+                location = p.mouse.get_pos()
+                col = location[0]//SQ_SIZE
+                row = location[1]//SQ_SIZE
+                if squareSelected == (row,col): #user clicked the same square => UNDO
+                    squareSelected = ()
+                    playerClicks = []
+                else:
+                    squareSelected = (row, col)
+                    playerClicks.append(squareSelected)
+                    if len(playerClicks)==2:
+                        move = ChessEngine.Move(playerClicks[0], playerClicks[1], curr_state.board)
+                        print(move.get_chess_notation())
+                        curr_state.make_move(move)
+                        #reset
+                        squareSelected = ()
+                        playerClicks = []
         clock.tick(MAX_FPS)
         draw_game_state(screen, curr_state)
         p.display.flip()
