@@ -1,10 +1,7 @@
 import pygame as p
 import ChessEngine
+from Constants import WIDTH, HEIGHT, DIMS, SQ_SIZE, MAX_FPS
 
-WIDTH = HEIGHT = 512
-DIMS = 8
-SQ_SIZE = HEIGHT // DIMS
-MAX_FPS = 15
 IMAGES = {}
 
 
@@ -70,6 +67,9 @@ def main():
                             # reset
                             squareSelected = ()
                             playerClicks = []
+                        else:
+                            # set the first square as the last selected square
+                            playerClicks = [squareSelected]
             # handle key presses
             elif e.type == p.KEYDOWN:
                 if e.key == p.K_z:  # if 'z' is pressed
