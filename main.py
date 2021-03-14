@@ -61,13 +61,14 @@ def main():
                     playerClicks.append(squareSelected)
                     if len(playerClicks) == 2:
                         move = ChessEngine.Move(playerClicks[0], playerClicks[1], currState.board)
-                        if move in validMoves:
-                            moveMade = True
-                            currState.make_move(move)
-                            # reset
-                            squareSelected = ()
-                            playerClicks = []
-                        else:
+                        for i in range(len(validMoves)):
+                            if move == validMoves[i]:
+                                moveMade = True
+                                currState.make_move(validMoves[i])
+                                # reset
+                                squareSelected = ()
+                                playerClicks = []
+                        if not moveMade:
                             # set the first square as the last selected square
                             playerClicks = [squareSelected]
             # handle key presses
