@@ -11,9 +11,33 @@ def load_images():
         IMAGES[piece] = p.transform.scale(p.image.load("images/" + piece + ".png"), (SQ_SIZE, SQ_SIZE))
 
 
-def draw_game_state(screen, curr_state):
+def highlight_squares(screen, currState, validMoves, squareSelected):
+    colors = [p.Color("white"), p.Color("gray")]
+    if squareSelected != ():
+        r, c = squareSelected
+        if currState.board[r][c][0] == ('w' if currState.whiteToMove else 'b'):
+            s = p.Surface((SQ_SIZE, SQ_SIZE))
+            s.set_alpha(100)
+            s.fill(p.Color("blue"))
+            screen.blit(s, (c * SQ_SIZE, r * SQ_SIZE))
+            s1 = p.Surface((SQ_SIZE, SQ_SIZE))
+            s1.set_alpha(100)
+            for move in validMoves:
+                if move.startRow == r and move.startCol == c:
+                    color = colors[(move.endRow + move.endCol) % 2]
+                    if currState.board[move.endRow][move.endCol] == "--":
+                        s1.fill(color)
+                        p.draw.circle(s1, p.Color("blue"), (SQ_SIZE // 2, SQ_SIZE // 2), 10)
+                    else:
+                        s1.fill(p.Color("blue"))
+                        p.draw.circle(s1, color, (SQ_SIZE // 2, SQ_SIZE // 2), SQ_SIZE // 2)
+                    screen.blit(s1, (move.endCol * SQ_SIZE, move.endRow * SQ_SIZE))
+
+
+def draw_game_state(screen, currState, validMoves, squareSelected):
     draw_board(screen)
-    draw_pieces(screen, curr_state.board)
+    highlight_squares(screen, currState, validMoves, squareSelected)
+    draw_pieces(screen, currState.board)
 
 
 def draw_board(screen):
@@ -82,7 +106,7 @@ def main():
             moveMade = False
 
         clock.tick(MAX_FPS)
-        draw_game_state(screen, currState)
+        draw_game_state(screen, currState, validMoves, squareSelected)
         p.display.flip()
 
 
