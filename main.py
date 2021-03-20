@@ -119,9 +119,16 @@ def main():
                             playerClicks = [squareSelected]
             # handle key presses
             elif e.type == p.KEYDOWN:
-                if e.key == p.K_z:  # if 'z' is pressed
+                if e.key == p.K_z:  # if 'z' is pressed, undo move
                     currState.undo_move()
                     moveMade = True
+                    animate = False
+                if e.key == p.K_r:  # if 'r' is pressed, reset board
+                    currState = ChessEngine.GameState()
+                    validMoves = currState.get_all_valid_moves()
+                    squareSelected = ()
+                    playerClicks = []
+                    moveMade = False
                     animate = False
 
         if moveMade:
