@@ -76,6 +76,16 @@ def draw_pieces(screen, board):
                 screen.blit(IMAGES[piece], p.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
 
+def draw_text(screen, text):
+    font = p.font.SysFont("Helvetic", 32, True, False)
+    textObj = font.render(text, False, p.Color("gray"))
+    textLoc = p.Rect(0, 0, WIDTH, HEIGHT).move(WIDTH / 2 - textObj.get_width() / 2,
+                                               HEIGHT / 2 - textObj.get_height() / 2)
+    screen.blit(textObj, textLoc)
+    textObj = font.render(text, False, p.Color("black"))
+    screen.blit(textObj, textLoc.move(2, 2))
+
+
 def main():
     p.init()
     screen = p.display.set_mode((WIDTH, HEIGHT))
@@ -85,6 +95,7 @@ def main():
     validMoves = currState.get_all_valid_moves()
     moveMade = False
     animate = False
+    gameOver = False
     load_images()
     running = True
     squareSelected = ()
@@ -95,28 +106,29 @@ def main():
                 running = False
             # handle mouse clicks
             elif e.type == p.MOUSEBUTTONDOWN:
-                location = p.mouse.get_pos()
-                col = location[0] // SQ_SIZE
-                row = location[1] // SQ_SIZE
-                if squareSelected == (row, col):  # user clicked the same square => UNDO
-                    squareSelected = ()
-                    playerClicks = []
-                else:
-                    squareSelected = (row, col)
-                    playerClicks.append(squareSelected)
-                    if len(playerClicks) == 2:
-                        move = ChessEngine.Move(playerClicks[0], playerClicks[1], currState.board)
-                        for i in range(len(validMoves)):
-                            if move == validMoves[i]:
-                                moveMade = True
-                                animate = True
-                                currState.make_move(validMoves[i])
-                                # reset
-                                squareSelected = ()
-                                playerClicks = []
-                        if not moveMade:
-                            # set the first square as the last selected square
-                            playerClicks = [squareSelected]
+                if not gameOver:
+                    location = p.mouse.get_pos()
+                    col = location[0] // SQ_SIZE
+                    row = location[1] // SQ_SIZE
+                    if squareSelected == (row, col):  # user clicked the same square => UNDO
+                        squareSelected = ()
+                        playerClicks = []
+                    else:
+                        squareSelected = (row, col)
+                        playerClicks.append(squareSelected)
+                        if len(playerClicks) == 2:
+                            move = ChessEngine.Move(playerClicks[0], playerClicks[1], currState.board)
+                            for i in range(len(validMoves)):
+                                if move == validMoves[i]:
+                                    moveMade = True
+                                    animate = True
+                                    currState.make_move(validMoves[i])
+                                    # reset
+                                    squareSelected = ()
+                                    playerClicks = []
+                            if not moveMade:
+                                # set the first square as the last selected square
+                                playerClicks = [squareSelected]
             # handle key presses
             elif e.type == p.KEYDOWN:
                 if e.key == p.K_z:  # if 'z' is pressed, undo move
@@ -130,6 +142,7 @@ def main():
                     playerClicks = []
                     moveMade = False
                     animate = False
+                    gameOver = False
 
         if moveMade:
             if animate:
@@ -137,9 +150,19 @@ def main():
             validMoves = currState.get_all_valid_moves()
             moveMade = False
 
-        clock.tick(MAX_FPS)
         draw_game_state(screen, currState, validMoves, squareSelected)
+        if currState.checkmate:
+            gameOver = True
+            if currState.whiteToMove:
+                draw_text(screen, "0-1 : Black wins by checkmate!")
+            else:
+                draw_text(screen, "1-0 : White wins by checkmate!")
+        elif currState.stalemate:
+            gameOver = True
+            draw_text(screen, "Draw by stalemate!")
+
         p.display.flip()
+        clock.tick(MAX_FPS)
 
 
 if __name__ == "__main__":
