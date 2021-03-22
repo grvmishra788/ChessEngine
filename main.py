@@ -1,4 +1,5 @@
 import pygame as p
+import ChessAI
 import ChessEngine
 from Constants import WIDTH, HEIGHT, DIMS, SQ_SIZE, MAX_FPS, COLORS
 
@@ -100,13 +101,16 @@ def main():
     running = True
     squareSelected = ()
     playerClicks = []
+    humanIsWhite = True  # If a human is playing white, this flag will be true, else False
+    humanIsBlack = False  # If a human is playing black, this flag will be true, else False
     while running:
+        humanTurn = (currState.whiteToMove and humanIsWhite) or (not currState.whiteToMove and humanIsBlack)
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
             # handle mouse clicks
             elif e.type == p.MOUSEBUTTONDOWN:
-                if not gameOver:
+                if not gameOver and humanTurn:
                     location = p.mouse.get_pos()
                     col = location[0] // SQ_SIZE
                     row = location[1] // SQ_SIZE
@@ -143,6 +147,12 @@ def main():
                     moveMade = False
                     animate = False
                     gameOver = False
+
+        if not gameOver and not humanTurn:
+            AIMove = ChessAI.find_random_move(validMoves)
+            currState.make_move(AIMove)
+            moveMade = True
+            animate = True
 
         if moveMade:
             if animate:
