@@ -139,6 +139,7 @@ def main():
                     currState.undo_move()
                     moveMade = True
                     animate = False
+                    gameOver = False
                 if e.key == p.K_r:  # if 'r' is pressed, reset board
                     currState = ChessEngine.GameState()
                     validMoves = currState.get_all_valid_moves()

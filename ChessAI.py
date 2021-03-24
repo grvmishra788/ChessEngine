@@ -17,18 +17,24 @@ def find_best_move(currState, validMoves):
     for move in validMoves:
         currState.make_move(move)
         opponentMoves = currState.get_all_valid_moves()
-        opponentMaxScore = -CHECKMATE_SCORE
-        for opponentMove in opponentMoves:
-            currState.make_move(opponentMove)
-            if currState.checkmate:
-                score = -turnMultiplier * CHECKMATE_SCORE
-            elif currState.stalemate:
-                score = STALEMATE_SCORE
-            else:
-                score = -turnMultiplier * score_material(currState.board)
-            if score > opponentMaxScore:
-                opponentMaxScore = score
-            currState.undo_move()
+        if currState.checkmate:
+            opponentMaxScore = -CHECKMATE_SCORE
+        elif currState.stalemate:
+            opponentMaxScore = STALEMATE_SCORE
+        else:
+            opponentMaxScore = -CHECKMATE_SCORE
+            for opponentMove in opponentMoves:
+                currState.make_move(opponentMove)
+                currState.get_all_valid_moves()
+                if currState.checkmate:
+                    score = CHECKMATE_SCORE
+                elif currState.stalemate:
+                    score = STALEMATE_SCORE
+                else:
+                    score = -turnMultiplier * score_material(currState.board)
+                if score > opponentMaxScore:
+                    opponentMaxScore = score
+                currState.undo_move()
         if opponentMinMaxScore > opponentMaxScore:
             opponentMinMaxScore = opponentMaxScore
             bestMove = move

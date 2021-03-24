@@ -103,6 +103,10 @@ class GameState:
             # update castling rights
             self.undo_update_castle_rights()
 
+            # undo checkmate or stalemate flags
+            self.checkmate = False
+            self.stalemate = False
+
     def update_castle_rights(self, move):
         # update - when it is a king or a rook move
         if move.pieceMoved == 'wK':
