@@ -3,6 +3,7 @@ import random
 PIECE_SCORE = {"K": 0, "Q": 9, "R": 5, "B": 3, "N": 3, "p": 1}
 CHECKMATE_SCORE = 1000
 STALEMATE_SCORE = 0
+MAX_DEPTH = 2
 
 
 def find_random_move(validMoves):
@@ -40,6 +41,84 @@ def find_best_move(currState, validMoves):
             bestMove = move
         currState.undo_move()
     return bestMove
+
+
+'''
+    Helper function to make first recursive call to find_move_min_max
+'''
+
+
+def find_best_move_min_max(currState, validMoves):
+    global nextMove
+    nextMove = None
+    find_move_min_max(currState, validMoves, MAX_DEPTH, currState.whiteToMove)
+    return nextMove
+
+
+'''
+    Recursive function to find the best move
+'''
+
+
+def find_move_min_max(currState, validMoves, depth, whiteToMove):
+    global nextMove
+    if depth == 0:
+        return score_material(currState.board)
+
+    if whiteToMove:
+        maxScore = -CHECKMATE_SCORE
+        for move in validMoves:
+            currState.make_move(move)
+            nextMoves = currState.get_all_valid_moves()
+            score = find_move_min_max(currState, nextMoves, depth - 1, False)
+            if score > maxScore:
+                maxScore = score
+                if depth == MAX_DEPTH:
+                    nextMove = move
+            currState.undo_move()
+        return maxScore
+    else:
+        minScore = CHECKMATE_SCORE
+        for move in validMoves:
+            currState.make_move(move)
+            nextMoves = currState.get_all_valid_moves()
+            score = find_move_min_max(currState, nextMoves, depth - 1, True)
+            if score < minScore:
+                minScore = score
+                if depth == MAX_DEPTH:
+                    nextMove = move
+            currState.undo_move()
+        return minScore
+
+
+'''
+Scores the current game state based on multiple factors.
+(+ve score is good for white, -ve score is good for black)
+'''
+
+
+def score_board(currState):
+    if currState.checkmate:
+        if currState.whiteToMove:
+            return -CHECKMATE_SCORE  # black wins
+        else:
+            return CHECKMATE_SCORE  # white wins
+    elif currState.stalemate:
+        return STALEMATE_SCORE
+    else:
+        score = 0
+        for row in currState.board:
+            for square in row:
+                if square[0] == 'w':
+                    score += PIECE_SCORE[square[1]]
+                elif square[0] == 'b':
+                    score -= PIECE_SCORE[square[1]]
+        return score
+
+
+'''
+Scores the current game state based on only material.
+'''
 
 
 def score_material(board):
