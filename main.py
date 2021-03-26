@@ -150,7 +150,7 @@ def main():
                     gameOver = False
 
         if not gameOver and not humanTurn:
-            AIMove = ChessAI.find_best_move_min_max(currState, validMoves)
+            AIMove = ChessAI.find_best_move_nega_max_alpha_beta(currState, validMoves)
             if AIMove is None:
                 AIMove = ChessAI.find_random_move(validMoves)
             currState.make_move(AIMove)
