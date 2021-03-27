@@ -31,6 +31,7 @@ class GameState:
         self.pins = []
         self.checks = []
         self.enPassantPossible = ()
+        self.enPassantPossibleLog = [self.enPassantPossible]
         self.castlingRights = CastleRights(True, True, True, True)
         self.castlingRightsLog = [CastleRights(True, True, True, True)]
 
@@ -62,11 +63,13 @@ class GameState:
                 self.board[move.endRow][move.endCol + 1] = self.board[move.endRow][move.endCol - 2]
                 self.board[move.endRow][move.endCol - 2] = "--"
 
-                # update enPassantPossible
+        # update enPassantPossible
         if move.pieceMoved[1] == 'p' and abs(move.endRow - move.startRow) == 2:
             self.enPassantPossible = ((move.startRow + move.endRow) // 2, move.endCol)
         else:
             self.enPassantPossible = ()
+        self.enPassantPossibleLog.append(self.enPassantPossible)
+
         # update castling rights
         self.update_castle_rights(move)
 
@@ -86,10 +89,9 @@ class GameState:
             if move.isEnPassant:
                 self.board[move.endRow][move.endCol] = "--"
                 self.board[move.startRow][move.endCol] = move.pieceCaptured
-                self.enPassantPossible = (move.endRow, move.endCol)
-            # undo 2 square pawn advance
-            if move.pieceMoved[1] == 'p' and abs(move.endRow - move.startRow) == 2:
-                self.enPassantPossible = ()
+            self.enPassantPossibleLog.pop()
+            self.enPassantPossible = self.enPassantPossibleLog[-1]
+
             # undo castle
             if move.isCastleMove:
                 if move.endCol - move.startCol == 2:  # king side castle
@@ -127,6 +129,20 @@ class GameState:
                     self.castlingRights.bqs = False
                 elif move.startCol == 7:  # right rook
                     self.castlingRights.bks = False
+        # update - when a rook is captured
+        if move.pieceCaptured == "wR":
+            if move.endRow == 7:
+                if move.endCol == 0:  # left rook
+                    self.castlingRights.wqs = False
+                elif move.endCol == 7:  # right rook
+                    self.castlingRights.wks = False
+        elif move.pieceCaptured == 'bR':
+            if move.endRow == 0:
+                if move.endCol == 0:  # left rook
+                    self.castlingRights.bqs = False
+                elif move.endCol == 7:  # right rook
+                    self.castlingRights.bks = False
+
         self.castlingRightsLog.append(CastleRights(self.castlingRights.wks, self.castlingRights.bks,
                                                    self.castlingRights.wqs, self.castlingRights.bqs))
 

@@ -49,6 +49,9 @@ def animate_move(move, screen, board, clock):
         p.draw.rect(screen, color, endSquare)
         # draw captured piece onto the rectangle
         if move.pieceCaptured != "--":
+            if move.isEnPassant:
+                newEnPassantRow = move.endRow + 1 if move.pieceCaptured[0]=='b' else move.endRow - 1
+                endSquare = p.Rect(move.endCol * SQ_SIZE, newEnPassantRow * SQ_SIZE, SQ_SIZE, SQ_SIZE)
             screen.blit(IMAGES[move.pieceCaptured], endSquare)
         # draw moving piece
         screen.blit(IMAGES[move.pieceMoved], p.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE))
@@ -102,7 +105,7 @@ def main():
     squareSelected = ()
     playerClicks = []
     humanIsWhite = True  # If a human is playing white, this flag will be true, else False
-    humanIsBlack = False  # If a human is playing black, this flag will be true, else False
+    humanIsBlack = True  # If a human is playing black, this flag will be true, else False
     while running:
         humanTurn = (currState.whiteToMove and humanIsWhite) or (not currState.whiteToMove and humanIsBlack)
         for e in p.event.get():
