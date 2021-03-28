@@ -1,7 +1,7 @@
 import pygame as p
 import ChessAI
 import ChessEngine
-from Constants import WIDTH, HEIGHT, DIMS, SQ_SIZE, MAX_FPS, COLORS
+from Constants import BOARD_WIDTH, BOARD_HEIGHT, MOVE_LOG_PANEL_WIDTH, MOVE_LOG_PANEL_HEIGHT, DIMS, SQ_SIZE, MAX_FPS, COLORS
 
 IMAGES = {}
 
@@ -59,10 +59,11 @@ def animate_move(move, screen, board, clock):
         clock.tick(60)
 
 
-def draw_game_state(screen, currState, validMoves, squareSelected):
+def draw_game_state(screen, currState, validMoves, squareSelected, moveLogFont):
     draw_board(screen)
     highlight_squares(screen, currState, validMoves, squareSelected)
     draw_pieces(screen, currState.board)
+    draw_move_log(screen, currState, moveLogFont)
 
 
 def draw_board(screen):
@@ -80,11 +81,33 @@ def draw_pieces(screen, board):
                 screen.blit(IMAGES[piece], p.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
 
-def draw_text(screen, text):
+def draw_move_log(screen, currState, font):
+    moveLogRect = p.Rect(BOARD_WIDTH, 0, MOVE_LOG_PANEL_WIDTH, MOVE_LOG_PANEL_HEIGHT)
+    p.draw.rect(screen, p.Color("black"), moveLogRect)
+    moveLog = currState.moveLog
+    paddingX = 5
+    paddingY = 5
+    rowSpace = 2
+    colSpace = 4
+    for i in range(len(moveLog)):
+        move = moveLog[i]
+        text = str((i//2+1))+". " if i % 2 == 0 else ""
+        text += move.get_chess_notation()
+        textObj = font.render(text, True, p.Color("white"))
+        textLoc = moveLogRect.move(paddingX, paddingY)
+        screen.blit(textObj, textLoc)
+        if i % 2 == 1:
+            paddingX = 5
+            paddingY += textObj.get_height() + rowSpace
+        else:
+            paddingX += textObj.get_width() + colSpace
+
+
+def draw_game_end_text(screen, text):
     font = p.font.SysFont("Helvetic", 32, True, False)
     textObj = font.render(text, False, p.Color("gray"))
-    textLoc = p.Rect(0, 0, WIDTH, HEIGHT).move(WIDTH / 2 - textObj.get_width() / 2,
-                                               HEIGHT / 2 - textObj.get_height() / 2)
+    textLoc = p.Rect(0, 0, BOARD_WIDTH, BOARD_HEIGHT).move(BOARD_WIDTH / 2 - textObj.get_width() / 2,
+                                                           BOARD_HEIGHT / 2 - textObj.get_height() / 2)
     screen.blit(textObj, textLoc)
     textObj = font.render(text, False, p.Color("black"))
     screen.blit(textObj, textLoc.move(2, 2))
@@ -92,11 +115,12 @@ def draw_text(screen, text):
 
 def main():
     p.init()
-    screen = p.display.set_mode((WIDTH, HEIGHT))
+    screen = p.display.set_mode((BOARD_WIDTH+MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
     currState = ChessEngine.GameState()
     validMoves = currState.get_all_valid_moves()
+    moveLogFont = p.font.SysFont("Times New Roman", 15, False, False)
     moveMade = False
     animate = False
     gameOver = False
@@ -117,7 +141,7 @@ def main():
                     location = p.mouse.get_pos()
                     col = location[0] // SQ_SIZE
                     row = location[1] // SQ_SIZE
-                    if squareSelected == (row, col):  # user clicked the same square => UNDO
+                    if squareSelected == (row, col) or col >= 8:  # user clicked the same square or user clicked side panel => UNDO
                         squareSelected = ()
                         playerClicks = []
                     else:
@@ -166,17 +190,11 @@ def main():
             validMoves = currState.get_all_valid_moves()
             moveMade = False
 
-        draw_game_state(screen, currState, validMoves, squareSelected)
-        if currState.checkmate:
+        draw_game_state(screen, currState, validMoves, squareSelected, moveLogFont)
+        if currState.checkmate or currState.stalemate:
             gameOver = True
-            if currState.whiteToMove:
-                draw_text(screen, "0-1 : Black wins by checkmate!")
-            else:
-                draw_text(screen, "1-0 : White wins by checkmate!")
-        elif currState.stalemate:
-            gameOver = True
-            draw_text(screen, "Draw by stalemate!")
-
+            text = "Draw by stalemate!" if currState.stalemate else "0-1 : Black wins by checkmate!" if currState.whiteToMove else "1-0 : White wins by checkmate!"
+            draw_game_end_text(screen, text)
         p.display.flip()
         clock.tick(MAX_FPS)
 
