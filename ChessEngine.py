@@ -56,7 +56,7 @@ class GameState:
         if move.isCastleMove:
             if move.endCol - move.startCol == 2:  # king side castle
                 # move the rook - which is in col endCol + 1
-                self.board[move.endRow][move.endCol-1] = self.board[move.endRow][move.endCol+1]
+                self.board[move.endRow][move.endCol - 1] = self.board[move.endRow][move.endCol + 1]
                 self.board[move.endRow][move.endCol + 1] = "--"
             elif move.startCol - move.endCol == 2:  # queen side castle
                 # move the rook - which is in col endCol - 2
@@ -153,7 +153,8 @@ class GameState:
     def get_all_valid_moves(self):
         # init temp vars to make sure we do not modify enPassantPossible or castleRights unknowingly
         tempEnPassantPossible = self.enPassantPossible
-        tempCastleRights = CastleRights(self.castlingRights.wks, self.castlingRights.bks, self.castlingRights.wqs, self.castlingRights.bqs)
+        tempCastleRights = CastleRights(self.castlingRights.wks, self.castlingRights.bks, self.castlingRights.wqs,
+                                        self.castlingRights.bqs)
         moves = []
         self.inCheck, self.pins, self.checks = self.get_pins_and_checks()
         if self.whiteToMove:
@@ -405,9 +406,9 @@ class GameState:
             self.get_queen_side_castle_moves(r, c, moves)
 
     def get_king_side_castle_moves(self, r, c, moves):
-        if self.board[r][c+1] == "--" and self.board[r][c+2] == "--":
-            if not self.square_under_attack(r, c+1) and not self.square_under_attack(r,c+2):
-                moves.append(Move((r, c), (r, c+2), self.board, isCastleMove=True))
+        if self.board[r][c + 1] == "--" and self.board[r][c + 2] == "--":
+            if not self.square_under_attack(r, c + 1) and not self.square_under_attack(r, c + 2):
+                moves.append(Move((r, c), (r, c + 2), self.board, isCastleMove=True))
 
     def get_queen_side_castle_moves(self, r, c, moves):
         if self.board[r][c - 1] == "--" and self.board[r][c - 2] == "--" and self.board[r][c - 3] == "--":
@@ -512,7 +513,7 @@ class Move:
         self.pieceCaptured = board[self.endRow][self.endCol]
         # pawn promotion
         self.isPawnPromotion = (self.pieceMoved == 'wp' and self.endRow == 0) or (
-                    self.pieceMoved == 'bp' and self.endRow == 7)
+                self.pieceMoved == 'bp' and self.endRow == 7)
         # en passant
         self.isEnPassant = isEnPassant
         if self.isEnPassant:
@@ -532,3 +533,26 @@ class Move:
 
     def get_chess_notation(self):
         return self.get_rank_file(self.startRow, self.startCol) + self.get_rank_file(self.endRow, self.endCol)
+
+    def __str__(self):
+        if self.isCastleMove:
+            return "0-0" if self.endCol == 6 else "0-0-0"
+
+        endSquare = self.get_rank_file(self.endRow, self.endCol)
+
+        # pawn moves
+        if self.pieceMoved[1] == "p":
+            moveString = ""
+            if self.pieceCaptured != "--":
+                moveString += self.cols_to_files[self.startCol] + "x" + endSquare
+            else:
+                moveString += endSquare
+            # pawn promotion
+            if self.isPawnPromotion:
+                moveString += "=Q"
+            return moveString
+
+        moveString = self.pieceMoved[1]
+        if self.pieceCaptured != "--":
+            moveString += "x"
+        return moveString + endSquare

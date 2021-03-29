@@ -92,7 +92,7 @@ def draw_move_log(screen, currState, font):
     for i in range(len(moveLog)):
         move = moveLog[i]
         text = str((i//2+1))+". " if i % 2 == 0 else ""
-        text += move.get_chess_notation()
+        text += str(move)
         textObj = font.render(text, True, p.Color("white"))
         textLoc = moveLogRect.move(paddingX, paddingY)
         screen.blit(textObj, textLoc)
