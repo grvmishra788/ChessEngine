@@ -1,7 +1,7 @@
 import pygame as p
 import ChessAI
 import ChessEngine
-from Constants import BOARD_WIDTH, BOARD_HEIGHT, MOVE_LOG_PANEL_WIDTH, MOVE_LOG_PANEL_HEIGHT, DIMS, SQ_SIZE, MAX_FPS, COLORS
+from Constants import BOARD_WIDTH, BOARD_HEIGHT, MOVE_LOG_PANEL_WIDTH, MOVE_LOG_PANEL_HEIGHT, DIMS, SQ_SIZE, MAX_FPS, COLORS, COLS_TO_FILES, ROWS_TO_RANKS
 
 IMAGES = {}
 
@@ -71,6 +71,21 @@ def draw_board(screen):
         for c in range(DIMS):
             color = p.Color(COLORS[(r + c) % 2])
             p.draw.rect(screen, color, p.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE))
+            # write rank and file names
+            if r == DIMS-1:
+                alternateColor = p.Color(COLORS[(r + c + 1) % 2])
+                font = p.font.SysFont("Arial", 16, True, False)
+                font.set_bold(True)
+                textObj = font.render(COLS_TO_FILES[c], False, alternateColor)
+                textLoc = p.Rect(0, 0, SQ_SIZE//20, SQ_SIZE//20).move(c * SQ_SIZE + SQ_SIZE // 20, r * SQ_SIZE + (14 * SQ_SIZE)//20)
+                screen.blit(textObj, textLoc)
+            if c == DIMS-1:
+                alternateColor = p.Color(COLORS[(r + c + 1) % 2])
+                font = p.font.SysFont("Arial", 16, True, False)
+                font.set_bold(True)
+                textObj = font.render(ROWS_TO_RANKS[r], False, alternateColor)
+                textLoc = p.Rect(0, 0, SQ_SIZE//20, SQ_SIZE//20).move(c * SQ_SIZE + (17 * SQ_SIZE)//20, r * SQ_SIZE + SQ_SIZE // 20)
+                screen.blit(textObj, textLoc)
 
 
 def draw_pieces(screen, board):

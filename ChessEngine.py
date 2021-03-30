@@ -1,4 +1,4 @@
-from Constants import DIMS, FOUR_WAY_DIRS, DIAGONAL_DIRS, KNIGHT_DIRS
+from Constants import DIMS, FOUR_WAY_DIRS, DIAGONAL_DIRS, KNIGHT_DIRS, COLS_TO_FILES, ROWS_TO_RANKS
 
 
 class GameState:
@@ -498,12 +498,6 @@ class CastleRights:
 
 
 class Move:
-    # maps for move notation
-    ranks_to_rows = {"1": 7, "2": 6, "3": 5, "4": 4, "5": 3, "6": 2, "7": 1, "8": 0}
-    rows_to_ranks = {value: key for key, value in ranks_to_rows.items()}
-    files_to_cols = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}
-    cols_to_files = {value: key for key, value in files_to_cols.items()}
-
     def __init__(self, startSquare, endSquare, board, isEnPassant=False, isCastleMove=False):
         self.startRow = startSquare[0]
         self.startCol = startSquare[1]
@@ -529,7 +523,7 @@ class Move:
         return False
 
     def get_rank_file(self, row, col):
-        return self.cols_to_files[col] + self.rows_to_ranks[row]
+        return COLS_TO_FILES[col] + ROWS_TO_RANKS[row]
 
     def get_chess_notation(self):
         return self.get_rank_file(self.startRow, self.startCol) + self.get_rank_file(self.endRow, self.endCol)
@@ -544,7 +538,7 @@ class Move:
         if self.pieceMoved[1] == "p":
             moveString = ""
             if self.pieceCaptured != "--":
-                moveString += self.cols_to_files[self.startCol] + "x" + endSquare
+                moveString += COLS_TO_FILES[self.startCol] + "x" + endSquare
             else:
                 moveString += endSquare
             # pawn promotion
