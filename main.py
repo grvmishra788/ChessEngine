@@ -50,7 +50,7 @@ def animate_move(move, screen, board, clock):
         # draw captured piece onto the rectangle
         if move.pieceCaptured != "--":
             if move.isEnPassant:
-                newEnPassantRow = move.endRow + 1 if move.pieceCaptured[0]=='b' else move.endRow - 1
+                newEnPassantRow = move.endRow + 1 if move.pieceCaptured[0] == 'b' else move.endRow - 1
                 endSquare = p.Rect(move.endCol * SQ_SIZE, newEnPassantRow * SQ_SIZE, SQ_SIZE, SQ_SIZE)
             screen.blit(IMAGES[move.pieceCaptured], endSquare)
         # draw moving piece
@@ -206,9 +206,10 @@ def main():
             moveMade = False
 
         draw_game_state(screen, currState, validMoves, squareSelected, moveLogFont)
-        if currState.checkmate or currState.stalemate:
+        if currState.checkmate or currState.stalemate or currState.repetition:
             gameOver = True
-            text = "Draw by stalemate!" if currState.stalemate else "0-1 : Black wins by checkmate!" if currState.whiteToMove else "1-0 : White wins by checkmate!"
+            text = "Draw by stalemate!" if currState.stalemate else "Draw by repetition!" if currState.repetition \
+                else "0-1 : Black wins by checkmate!" if currState.whiteToMove else "1-0 : White wins by checkmate!"
             draw_game_end_text(screen, text)
         p.display.flip()
         clock.tick(MAX_FPS)

@@ -21,6 +21,7 @@ class GameState:
             'Q': self.get_queen_moves,
             'K': self.get_king_moves
         }
+        self.stateRepetitionCounts = {}
         self.whiteToMove = True
         self.moveLog = []
         self.whiteKingLoc = (7, 4)
@@ -28,6 +29,7 @@ class GameState:
         self.inCheck = False
         self.checkmate = False
         self.stalemate = False
+        self.repetition = False
         self.pins = []
         self.checks = []
         self.enPassantPossible = ()
@@ -69,13 +71,24 @@ class GameState:
         else:
             self.enPassantPossible = ()
         self.enPassantPossibleLog.append(self.enPassantPossible)
-
+        # update repetition count
+        boardString = str(self)
+        if boardString in self.stateRepetitionCounts.keys():
+            self.stateRepetitionCounts[boardString] += 1
+        else:
+            self.stateRepetitionCounts[boardString] = 1
+        if self.stateRepetitionCounts[boardString] == 3:
+            self.repetition = True
         # update castling rights
         self.update_castle_rights(move)
 
     # function to undo the last move
     def undo_move(self):
         if len(self.moveLog) != 0:
+            # update repetition count
+            self.stateRepetitionCounts[str(self)] -= 1
+            self.repetition = False
+            # update board state
             move = self.moveLog.pop()
             self.whiteToMove = not self.whiteToMove
             self.board[move.startRow][move.startCol] = move.pieceMoved
@@ -488,6 +501,12 @@ class GameState:
     def check_bounds(r, c):
         return 0 <= r < DIMS and 0 <= c < DIMS
 
+    def __str__(self):
+        result = ""
+        for r in range(DIMS):
+            for c in range(DIMS):
+                result += self.board[r][c] + " "
+        return result
 
 class CastleRights:
     def __init__(self, wks, bks, wqs, bqs):
@@ -522,7 +541,8 @@ class Move:
             return self.moveID == other.moveID
         return False
 
-    def get_rank_file(self, row, col):
+    @staticmethod
+    def get_rank_file(row, col):
         return COLS_TO_FILES[col] + ROWS_TO_RANKS[row]
 
     def get_chess_notation(self):
