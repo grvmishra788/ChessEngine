@@ -206,9 +206,9 @@ def main():
             moveMade = False
 
         draw_game_state(screen, currState, validMoves, squareSelected, moveLogFont)
-        if currState.checkmate or currState.stalemate or currState.repetition:
+        if currState.checkmate or currState.stalemate or currState.repetition or currState.fiftyMovesDone:
             gameOver = True
-            text = "Draw by stalemate!" if currState.stalemate else "Draw by repetition!" if currState.repetition \
+            text = "Draw by stalemate!" if currState.stalemate else "Draw by repetition!" if currState.repetition else "Draw by 50-move rule!" if currState.fiftyMovesDone\
                 else "0-1 : Black wins by checkmate!" if currState.whiteToMove else "1-0 : White wins by checkmate!"
             draw_game_end_text(screen, text)
         p.display.flip()

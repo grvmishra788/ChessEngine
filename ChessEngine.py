@@ -21,6 +21,8 @@ class GameState:
             'Q': self.get_queen_moves,
             'K': self.get_king_moves
         }
+        self.fiftyMoveCount = 0
+        self.fiftyMoveCountLog = [self.fiftyMoveCount]
         self.stateRepetitionCounts = {}
         self.whiteToMove = True
         self.moveLog = []
@@ -30,6 +32,7 @@ class GameState:
         self.checkmate = False
         self.stalemate = False
         self.repetition = False
+        self.fiftyMovesDone = False
         self.pins = []
         self.checks = []
         self.enPassantPossible = ()
@@ -79,6 +82,15 @@ class GameState:
             self.stateRepetitionCounts[boardString] = 1
         if self.stateRepetitionCounts[boardString] == 3:
             self.repetition = True
+        # update fiftyMove count
+        if move.pieceMoved[1] != 'p' and move.pieceCaptured == "--":
+            self.fiftyMoveCount += 1
+            if self.fiftyMoveCount == 100:
+                self.fiftyMovesDone = True
+        else:
+            self.fiftyMoveCount = 0
+            self.fiftyMovesDone = False
+        self.fiftyMoveCountLog.append(self.fiftyMoveCount)
         # update castling rights
         self.update_castle_rights(move)
 
@@ -117,6 +129,11 @@ class GameState:
                     self.board[move.endRow][move.endCol + 1] = "--"
             # update castling rights
             self.undo_update_castle_rights()
+
+            # update fiftyMove count
+            self.fiftyMoveCountLog.pop()
+            self.fiftyMoveCount = self.fiftyMoveCountLog[-1]
+            self.fiftyMovesDone = False
 
             # undo checkmate or stalemate flags
             self.checkmate = False
