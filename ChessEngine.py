@@ -281,51 +281,35 @@ class GameState:
                 break
 
         if self.whiteToMove:
-            # 1 square pawn advance
-            if self.board[r - 1][c] == "--":
-                if not piece_pinned or pin_direction == (-1, 0):
-                    moves.append(Move((r, c), (r - 1, c), self.board))
-                    # 2 square pawn advance
-                    if r == 6 and self.board[r - 2][c] == "--":
-                        moves.append(Move((r, c), (r - 2, c), self.board))
-            # left capture
-            if c - 1 >= 0:
-                if not piece_pinned or pin_direction == (-1, -1):
-                    if self.board[r - 1][c - 1][0] == 'b':
-                        moves.append(Move((r, c), (r - 1, c - 1), self.board))
-                    elif (r - 1, c - 1) == self.enPassantPossible:
-                        moves.append(Move((r, c), (r - 1, c - 1), self.board, isEnPassant=True))
-
-            # right capture
-            if c + 1 < DIMS:
-                if not piece_pinned or pin_direction == (-1, 1):
-                    if self.board[r - 1][c + 1][0] == 'b':
-                        moves.append(Move((r, c), (r - 1, c + 1), self.board))
-                    elif (r - 1, c + 1) == self.enPassantPossible:
-                        moves.append(Move((r, c), (r - 1, c + 1), self.board, isEnPassant=True))
+            moveAmount = -1
+            startRow = 6
+            enemyColor = 'b'
         else:
-            # 1 square pawn advance
-            if self.board[r + 1][c] == "--":
-                if not piece_pinned or pin_direction == (1, 0):
-                    moves.append(Move((r, c), (r + 1, c), self.board))
-                    # 2 square pawn advance
-                    if r == 1 and self.board[r + 2][c] == "--":
-                        moves.append(Move((r, c), (r + 2, c), self.board))
-            # left capture
-            if c - 1 >= 0:
-                if not piece_pinned or pin_direction == (1, -1):
-                    if self.board[r + 1][c - 1][0] == 'w':
-                        moves.append(Move((r, c), (r + 1, c - 1), self.board))
-                    elif (r + 1, c - 1) == self.enPassantPossible:
-                        moves.append(Move((r, c), (r + 1, c - 1), self.board, isEnPassant=True))
+            moveAmount = 1
+            startRow = 1
+            enemyColor = 'w'
 
-            # right capture
-            if c + 1 < DIMS:
-                if not piece_pinned or pin_direction == (1, 1):
-                    if self.board[r + 1][c + 1][0] == 'w':
-                        moves.append(Move((r, c), (r + 1, c + 1), self.board))
-                    elif (r + 1, c + 1) == self.enPassantPossible:
-                        moves.append(Move((r, c), (r + 1, c + 1), self.board, isEnPassant=True))
+        # 1 square pawn advance
+        if self.board[r + moveAmount][c] == "--":
+            if not piece_pinned or pin_direction == (moveAmount, 0):
+                moves.append(Move((r, c), (r + moveAmount, c), self.board))
+                # 2 square pawn advance
+                if r == startRow and self.board[r + 2 * moveAmount][c] == "--":
+                    moves.append(Move((r, c), (r + 2 * moveAmount, c), self.board))
+        # left capture
+        if c - 1 >= 0:
+            if not piece_pinned or pin_direction == (moveAmount, -1):
+                if self.board[r + moveAmount][c - 1][0] == enemyColor:
+                    moves.append(Move((r, c), (r + moveAmount, c - 1), self.board))
+                elif (r + moveAmount, c - 1) == self.enPassantPossible:
+                    moves.append(Move((r, c), (r + moveAmount, c - 1), self.board, isEnPassant=True))
+        # right capture
+        if c + 1 < DIMS:
+            if not piece_pinned or pin_direction == (moveAmount, 1):
+                if self.board[r + moveAmount][c + 1][0] == enemyColor:
+                    moves.append(Move((r, c), (r + moveAmount, c + 1), self.board))
+                elif (r + moveAmount, c + 1) == self.enPassantPossible:
+                    moves.append(Move((r, c), (r + moveAmount, c + 1), self.board, isEnPassant=True))
 
     def get_rook_moves(self, r, c, moves):
         piece_pinned = False
