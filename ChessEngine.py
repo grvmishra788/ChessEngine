@@ -284,10 +284,12 @@ class GameState:
             moveAmount = -1
             startRow = 6
             enemyColor = 'b'
+            kingRow, kingCol = self.whiteKingLoc
         else:
             moveAmount = 1
             startRow = 1
             enemyColor = 'w'
+            kingRow, kingCol = self.blackKingLoc
 
         # 1 square pawn advance
         if self.board[r + moveAmount][c] == "--":
@@ -302,14 +304,56 @@ class GameState:
                 if self.board[r + moveAmount][c - 1][0] == enemyColor:
                     moves.append(Move((r, c), (r + moveAmount, c - 1), self.board))
                 elif (r + moveAmount, c - 1) == self.enPassantPossible:
-                    moves.append(Move((r, c), (r + moveAmount, c - 1), self.board, isEnPassant=True))
+                    attackingPiece = blockingPiece = False
+                    if kingRow == r:
+                        # inside range : between king & pawn
+                        # outside range : pawn & border
+                        if kingCol < c:  # king left of pawn
+                            insideRange = range(kingCol + 1, c - 1)
+                            outsideRange = range(c + 1, DIMS)
+                        else:
+                            insideRange = range(kingCol - 1, c, - 1)
+                            outsideRange = range(c - 2, -1, -1)
+
+                        for i in insideRange:  # check for blocking piece
+                            if self.board[r][i] != "--":  # some other piece beside en-passant pawn blocks
+                                blockingPiece = True
+                        for i in outsideRange:  # check for attacking piece
+                            square = self.board[r][i]
+                            if square[0] == enemyColor and (square[1] == 'R' or square[1] == 'Q'):  # enemy rook or queen is attacking
+                                attackingPiece = True
+                            elif square != "--":
+                                blockingPiece = True
+                    if not attackingPiece or blockingPiece:
+                        moves.append(Move((r, c), (r + moveAmount, c - 1), self.board, isEnPassant=True))
         # right capture
         if c + 1 < DIMS:
             if not piece_pinned or pin_direction == (moveAmount, 1):
                 if self.board[r + moveAmount][c + 1][0] == enemyColor:
                     moves.append(Move((r, c), (r + moveAmount, c + 1), self.board))
                 elif (r + moveAmount, c + 1) == self.enPassantPossible:
-                    moves.append(Move((r, c), (r + moveAmount, c + 1), self.board, isEnPassant=True))
+                    attackingPiece = blockingPiece = False
+                    if kingRow == r:
+                        # inside range : between king & pawn
+                        # outside range : pawn & border
+                        if kingCol < c:  # king left of pawn
+                            insideRange = range(kingCol + 1, c)
+                            outsideRange = range(c + 2, DIMS)
+                        else:
+                            insideRange = range(kingCol - 1, c + 1, - 1)
+                            outsideRange = range(c - 1, -1, -1)
+
+                        for i in insideRange:  # check for blocking piece
+                            if self.board[r][i] != "--":  # some other piece beside en-passant pawn blocks
+                                blockingPiece = True
+                        for i in outsideRange:  # check for attacking piece
+                            square = self.board[r][i]
+                            if square[0] == enemyColor and (square[1] == 'R' or square[1] == 'Q'):  # enemy rook or queen is attacking
+                                attackingPiece = True
+                            elif square != "--":
+                                blockingPiece = True
+                    if not attackingPiece or blockingPiece:
+                        moves.append(Move((r, c), (r + moveAmount, c + 1), self.board, isEnPassant=True))
 
     def get_rook_moves(self, r, c, moves):
         piece_pinned = False
@@ -508,6 +552,7 @@ class GameState:
             for c in range(DIMS):
                 result += self.board[r][c] + " "
         return result
+
 
 class CastleRights:
     def __init__(self, wks, bks, wqs, bqs):
